@@ -2,6 +2,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import WindowManager from "@/components/WindowManager";
+import type { WindowID } from "@/types/window";
 
 type DesktopItem = {
   id: string;
@@ -47,30 +49,38 @@ export default function Home() {
     <main className="retro-desktop relative min-h-svh overflow-hidden">
 
       {/* Desktop Icons */}
-      <div className="desktop-icons grid grid-cols-1">
-        {desktopItems.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={`desktop-icon ${
-              selectedIcon === item.id ? "selected" : ""
-            }`}
-            onClick={() => {
-              setSelectedIcon(item.id);
-              setStartMenuOpen(false);
-            }}
-            aria-label={item.name}
-          >
-            <span className="desktop-icon-art" aria-hidden="true">
-              {item.icon}
-            </span>
+      
+    <WindowManager>
+      {(openWindow) => (
+        <div className="desktop-icons grid grid-cols-1">
+          {desktopItems.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`desktop-icon ${
+                selectedIcon === item.id ? "selected" : ""
+              }`}
+              onClick={() => {
+                setSelectedIcon(item.id);
+                setStartMenuOpen(false);
 
-            <span className="desktop-icon-label">
-              {item.name}
-            </span>
-          </button>
-        ))}
-      </div>
+                if (item.id !== "trash") {
+                  openWindow(item.id as WindowID);
+                }
+              }}
+              aria-label={item.name}
+            >
+              <span className="desktop-icon-art" aria-hidden="true">
+                {item.icon}
+              </span>
+              <span className="desktop-icon-label">
+                {item.name}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </WindowManager>
 
       {/* Start Menu */}
       {startMenuOpen && (

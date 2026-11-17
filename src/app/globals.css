@@ -200,3 +200,103 @@ body {
     width: 76px;
   }
 }
+
+
+/* Application windows */
+
+.window {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  min-width: 280px;
+  min-height: 180px;
+  background: #c0c0c0;
+  border: 2px outset #ffffff;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.35);
+  color: #000000;
+}
+
+.window.maximized {
+  left: 0 !important;
+  top: 0 !important;
+  border: 2px solid #c0c0c0;
+}
+
+.window-titlebar {
+  height: 27px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 3px 2px 5px;
+  background: linear-gradient(90deg, #000080, #1084d0);
+  color: white;
+  cursor: default;
+}
+
+.window-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.window-title strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.window-controls {
+  display: flex;
+  gap: 2px;
+}
+
+.window-controls button {
+  width: 21px;
+  height: 20px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #c0c0c0;
+  color: black;
+  border: 2px outset white;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.window-controls button:active {
+  border-style: inset;
+}
+
+.window-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+  background: #ffffff;
+}
+
+
+/* Window manager layer */
+
+.window-manager {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 43px;
+  left: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Allow interaction with individual windows */
+
+.window {
+  pointer-events: auto;
+}
