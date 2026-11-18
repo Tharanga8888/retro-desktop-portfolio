@@ -41,6 +41,34 @@ export default function Home() {
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [isShutDown, setIsShutDown] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [showDesktopProperties, setShowDesktopProperties] = useState(false);
+  const [iconOrder, setIconOrder] = useState(desktopItems);
+
+  function handleDesktopContextMenu(
+    event: React.MouseEvent<HTMLElement>
+  ) {
+    const target = event.target as HTMLElement;
+
+    // Don't show the desktop menu over other interface elements.
+    if (
+      target.closest(
+        "button, .window, .taskbar, .start-menu, .shutdown-screen"
+      )
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+
+    setContextMenu({
+      x: Math.min(event.clientX, window.innerWidth - 200),
+      y: Math.min(event.clientY, window.innerHeight - 190),
+    });
+  }
 
   // Update the taskbar clock
   useEffect(() => {
@@ -60,8 +88,26 @@ export default function Home() {
     return () => window.clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setContextMenu(null);
+        setShowDesktopProperties(false);
+      }
+    }
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
   return (
-    <main className="retro-desktop relative min-h-svh overflow-hidden">
+    <main
+      className="retro-desktop relative min-h-svh overflow-hidden"
+      onContextMenu={handleDesktopContextMenu}
+      onClick={() => setContextMenu(null)}
+    >
 
       {/* Desktop Icons */}
       
@@ -74,7 +120,7 @@ export default function Home() {
         }) => (
           <>
             <div className="desktop-icons grid grid-cols-1">
-              {desktopItems.map((item) => (
+              {iconOrder.map((item) => (
                 <button
                   key={item.id}
                   type="button"
@@ -100,6 +146,114 @@ export default function Home() {
                 </button>
               ))}
             </div>
+
+            {contextMenu && (
+              <div
+                className="desktop-context-menu"
+                style={{
+                  left: contextMenu.x,
+                  top: contextMenu.y,
+                }}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedIcon(null);
+                    setIconOrder([...desktopItems]);
+                    setContextMenu(null);
+                  }}
+                >
+                  <span>🔄</span>
+                  Refresh
+                </button>
+
+                <div className="context-menu-divider" />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIconOrder([...desktopItems]);
+                    setContextMenu(null);
+                  }}
+                >
+                  <span>🗂️</span>
+                  Arrange Icons
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIconOrder(
+                      [...iconOrder].sort((a, b) =>
+                        a.name.localeCompare(b.name)
+                      )
+                    );
+                    setContextMenu(null);
+                  }}
+                >
+                  <span>🔤</span>
+                  Sort by Name
+                </button>
+
+                <div className="context-menu-divider" />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDesktopProperties(true);
+                    setContextMenu(null);
+                  }}
+                >
+                  <span>⚙️</span>
+                  Properties
+                </button>
+              </div>
+            )}
+
+            {showDesktopProperties && (
+              <div
+                className="desktop-properties-overlay"
+                onClick={() => setShowDesktopProperties(false)}
+              >
+                <div
+                  className="desktop-properties"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <div className="desktop-properties-titlebar">
+                    <span>Display Properties</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowDesktopProperties(false)}
+                      aria-label="Close properties"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div className="desktop-properties-content">
+                    <div className="properties-icon">🖥️</div>
+                    <div>
+                      <strong>Portfolio OS Desktop</strong>
+                      <p>
+                        A retro desktop experience inspired by Windows 95.
+                      </p>
+                      <p>Version: 1.0</p>
+                      <p>Resolution: Modern Web Display</p>
+                    </div>
+                  </div>
+
+                  <div className="desktop-properties-actions">
+                    <button
+                      type="button"
+                      onClick={() => setShowDesktopProperties(false)}
+                    >
+                      OK
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
                     
             {/* Start Menu */}
             {startMenuOpen && (
