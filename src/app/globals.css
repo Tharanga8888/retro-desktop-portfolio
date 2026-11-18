@@ -301,3 +301,52 @@ body {
 .window {
   pointer-events: auto;
 }
+
+
+
+/* Taskbar application buttons */
+
+.taskbar-applications {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.taskbar-applications::-webkit-scrollbar {
+  display: none;
+}
+
+.taskbar-window-button {
+  height: 31px;
+  min-width: 100px;
+  max-width: 160px;
+  padding: 3px 9px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  background: #c0c0c0;
+  border: 2px outset #ffffff;
+
+  color: #000000;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: normal;
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.taskbar-window-button.active {
+  border-style: inset;
+  background: #b5b5b5;
+  font-weight: bold;
+}
+
+.taskbar-window-button:active {
+  border-style: inset;
+}

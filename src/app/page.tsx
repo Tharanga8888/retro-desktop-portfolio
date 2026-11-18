@@ -50,82 +50,107 @@ export default function Home() {
 
       {/* Desktop Icons */}
       
-    <WindowManager>
-      {(openWindow) => (
-        <div className="desktop-icons grid grid-cols-1">
-          {desktopItems.map((item) => (
+      <WindowManager>
+        {({
+          openWindow,
+          windows,
+          activeWindowId,
+          onTaskbarClick,
+        }) => (
+          <>
+            <div className="desktop-icons grid grid-cols-1">
+              {desktopItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`desktop-icon ${
+                    selectedIcon === item.id ? "selected" : ""
+                  }`}
+                  onClick={() => {
+                    setSelectedIcon(item.id);
+                    setStartMenuOpen(false);
+
+                    if (item.id !== "trash") {
+                      openWindow(item.id as WindowID);
+                    }
+                  }}
+                  aria-label={item.name}
+                >
+                  <span className="desktop-icon-art" aria-hidden="true">
+                    {item.icon}
+                  </span>
+                  <span className="desktop-icon-label">
+                    {item.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          
+        
+
+          {/* Start Menu */}
+          {startMenuOpen && (
+            <div className="start-menu">
+              <div className="start-menu-heading">
+                <span>THARANGA</span>
+                <strong>Portfolio OS</strong>
+              </div>
+
+              <div className="start-menu-content">
+                <p>Welcome to my desktop!</p>
+                <p className="start-menu-hint">
+                  Applications coming soon...
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Taskbar */}
+          <footer className="taskbar">
+
             <button
-              key={item.id}
               type="button"
-              className={`desktop-icon ${
-                selectedIcon === item.id ? "selected" : ""
-              }`}
-              onClick={() => {
-                setSelectedIcon(item.id);
-                setStartMenuOpen(false);
-
-                if (item.id !== "trash") {
-                  openWindow(item.id as WindowID);
-                }
-              }}
-              aria-label={item.name}
+              className={`start-button ${startMenuOpen ? "pressed" : ""}`}
+              onClick={() => setStartMenuOpen(!startMenuOpen)}
+              aria-expanded={startMenuOpen}
             >
-              <span className="desktop-icon-art" aria-hidden="true">
-                {item.icon}
+              <span className="start-logo" aria-hidden="true">
+                🪟
               </span>
-              <span className="desktop-icon-label">
-                {item.name}
-              </span>
+              <strong>Start</strong>
             </button>
-          ))}
-        </div>
-      )}
-    </WindowManager>
 
-      {/* Start Menu */}
-      {startMenuOpen && (
-        <div className="start-menu">
-          <div className="start-menu-heading">
-            <span>THARANGA</span>
-            <strong>Portfolio OS</strong>
-          </div>
+            <div className="taskbar-divider" />
 
-          <div className="start-menu-content">
-            <p>Welcome to my desktop!</p>
-            <p className="start-menu-hint">
-              Applications coming soon...
-            </p>
-          </div>
-        </div>
-      )}
+            <div className="taskbar-applications">
+              {windows.map((window) => (
+                <button
+                  key={window.id}
+                  type="button"
+                  className={`taskbar-window-button ${
+                    activeWindowId === window.id ? "active" : ""
+                  }`}
+                  onClick={() => onTaskbarClick(window.id)}
+                  title={window.title}
+                >
+                  {window.title}
+                </button>
+              ))}
+            </div>
 
-      {/* Taskbar */}
-      <footer className="taskbar">
+            <div className="taskbar-spacer" />
 
-        <button
-          type="button"
-          className={`start-button ${startMenuOpen ? "pressed" : ""}`}
-          onClick={() => setStartMenuOpen(!startMenuOpen)}
-          aria-expanded={startMenuOpen}
-        >
-          <span className="start-logo" aria-hidden="true">
-            🪟
-          </span>
-          <strong>Start</strong>
-        </button>
+            {/* System Tray */}
+            <div className="system-tray">
+              <span aria-hidden="true">🔊</span>
+              <span aria-hidden="true">🌐</span>
+              <span className="clock">{time || "--:--"}</span>
+            </div>
 
-        <div className="taskbar-divider" />
-
-        <div className="taskbar-spacer" />
-
-        {/* System Tray */}
-        <div className="system-tray">
-          <span aria-hidden="true">🔊</span>
-          <span aria-hidden="true">🌐</span>
-          <span className="clock">{time || "--:--"}</span>
-        </div>
-
-      </footer>
+          </footer>
+        </>
+        )}
+      </WindowManager>
     </main>
   );
 }

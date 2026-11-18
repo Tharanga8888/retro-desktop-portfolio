@@ -7,7 +7,12 @@ import Window from "./Window";
 import type { WindowID, WindowState } from "@/types/window";
 
 type WindowManagerProps = {
-  children: (openWindow: (id: WindowID) => void) => ReactNode;
+  children: (controls: {
+    openWindow: (id: WindowID) => void;
+    windows: WindowState[];
+    activeWindowId: WindowID | null;
+    onTaskbarClick: (id: WindowID) => void;
+  }) => ReactNode;
 };
 
 const windowTitles: Record<WindowID, string> = {
@@ -51,6 +56,18 @@ export default function WindowManager({
   const [windows, setWindows] = useState<WindowState[]>([]);
   const [nextZIndex, setNextZIndex] = useState(10);
   const managerRef = useRef<HTMLDivElement>(null);
+  const activeWindow = windows.reduce<WindowState | null>(
+    (active, window) => {
+      if (window.isMinimized) return active;
+
+      if (!active || window.zIndex > active.zIndex) {
+        return window;
+      }
+
+      return active;
+    },
+    null
+  );
 
   // Open an application window
   function openWindow(id: WindowID) {
@@ -158,9 +175,46 @@ export default function WindowManager({
     );
   }
 
+  function handleTaskbarClick(id: WindowID) {
+    const clickedWindow = windows.find(
+      (window) => window.id === id
+    );
+
+    if (!clickedWindow) return;
+
+    // Clicking the active window minimizes it.
+    if (
+      !clickedWindow.isMinimized &&
+      activeWindow?.id === id
+    ) {
+      minimizeWindow(id);
+      return;
+    }
+
+    // Otherwise restore it and bring it to the front.
+    setWindows((currentWindows) =>
+      currentWindows.map((window) =>
+        window.id === id
+          ? {
+              ...window,
+              isMinimized: false,
+              zIndex: nextZIndex,
+            }
+          : window
+      )
+    );
+
+    setNextZIndex((current) => current + 1);
+  }
+
   return (
-    <>
-      {children(openWindow)}
+    <div className="window-manager-root">
+      {children({
+        openWindow,
+        windows,
+        activeWindowId: activeWindow?.id ?? null,
+        onTaskbarClick: handleTaskbarClick,
+      })}
 
       <div className="window-manager" ref={managerRef}>
         {windows.map((window) => {
@@ -189,6 +243,6 @@ export default function WindowManager({
           );
         })}
       </div>
-    </>
+    </div>
   );
 }
