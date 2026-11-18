@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { ReactNode } from "react";
 import Window from "./Window";
 import type { WindowID, WindowState } from "@/types/window";
@@ -50,6 +50,7 @@ export default function WindowManager({
 }: WindowManagerProps) {
   const [windows, setWindows] = useState<WindowState[]>([]);
   const [nextZIndex, setNextZIndex] = useState(10);
+  const managerRef = useRef<HTMLDivElement>(null);
 
   // Open an application window
   function openWindow(id: WindowID) {
@@ -131,11 +132,37 @@ export default function WindowManager({
     setNextZIndex((current) => current + 1);
   }
 
+  // Move a window to a new position
+  function moveWindow(id: WindowID, x: number, y: number) {
+    const container = managerRef.current;
+
+    if (!container) return;
+
+    const maxX = Math.max(
+      0,
+      container.clientWidth -
+        (windows.find((window) => window.id === id)?.width ?? 0)
+    );
+
+    const maxY = Math.max(0, container.clientHeight - 27);
+
+    const boundedX = Math.min(Math.max(0, x), maxX);
+    const boundedY = Math.min(Math.max(0, y), maxY);
+
+    setWindows((currentWindows) =>
+      currentWindows.map((window) =>
+        window.id === id
+          ? { ...window, x: boundedX, y: boundedY }
+          : window
+      )
+    );
+  }
+
   return (
     <>
       {children(openWindow)}
 
-      <div className="window-manager">
+      <div className="window-manager" ref={managerRef}>
         {windows.map((window) => {
           if (!window.isOpen || window.isMinimized) {
             return null;
@@ -155,6 +182,7 @@ export default function WindowManager({
               onMinimize={() => minimizeWindow(window.id)}
               onMaximize={() => maximizeWindow(window.id)}
               onFocus={() => focusWindow(window.id)}
+              onMove={(x, y) => moveWindow(window.id, x, y)}
             >
               {getWindowContent(window.id)}
             </Window>

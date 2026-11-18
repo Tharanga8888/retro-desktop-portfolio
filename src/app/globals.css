@@ -231,7 +231,8 @@ body {
   padding: 2px 3px 2px 5px;
   background: linear-gradient(90deg, #000080, #1084d0);
   color: white;
-  cursor: default;
+  cursor: move;
+  touch-action: none;
 }
 
 .window-title {
