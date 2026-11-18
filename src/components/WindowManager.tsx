@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import type { ReactNode } from "react";
 import Window from "./Window";
 import type { WindowID, WindowState } from "@/types/window";
+import FileExplorer from "@/components/FileExplorer";
 
 type WindowManagerProps = {
   children: (controls: {
@@ -25,7 +26,10 @@ const windowTitles: Record<WindowID, string> = {
   computer: "My Computer",
 };
 
-function getWindowContent(id: WindowID) {
+function getWindowContent(
+  id: WindowID,
+  openWindow: (id: WindowID) => void
+): ReactNode {
   switch (id) {
     case "about":
       return <h2>Welcome to my portfolio!</h2>;
@@ -46,7 +50,7 @@ function getWindowContent(id: WindowID) {
       return <h2>Contact Me</h2>;
 
     case "computer":
-      return <h2>My Computer</h2>;
+      return <FileExplorer openWindow={openWindow} />;
   }
 }
 
@@ -238,7 +242,7 @@ export default function WindowManager({
               onFocus={() => focusWindow(window.id)}
               onMove={(x, y) => moveWindow(window.id, x, y)}
             >
-              {getWindowContent(window.id)}
+              {getWindowContent(window.id, openWindow)}
             </Window>
           );
         })}
