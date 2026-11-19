@@ -36,6 +36,40 @@ const startMenuApps: {
     { id: "computer", name: "My Computer", icon: "🖥️" },
   ];
 
+type Wallpaper = {
+  id: string;
+  name: string;
+  background: string;
+};
+
+const wallpapers: Wallpaper[] = [
+  {
+    id: "classic",
+    name: "Windows 95 Classic",
+    background: "#008080",
+  },
+  {
+    id: "midnight",
+    name: "Midnight Blue",
+    background: "linear-gradient(135deg, #000033, #000080, #4169e1)",
+  },
+  {
+    id: "sunset",
+    name: "Retro Sunset",
+    background: "linear-gradient(135deg, #ff512f, #dd2476, #4b134f)",
+  },
+  {
+    id: "purple",
+    name: "Purple Dream",
+    background: "linear-gradient(135deg, #240046, #7b2cbf, #c77dff)",
+  },
+  {
+    id: "forest",
+    name: "Deep Forest",
+    background: "linear-gradient(135deg, #002b1a, #006400, #228b22)",
+  },
+];
+
 export default function Home() {
   const [time, setTime] = useState("");
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
@@ -47,28 +81,22 @@ export default function Home() {
   } | null>(null);
   const [showDesktopProperties, setShowDesktopProperties] = useState(false);
   const [iconOrder, setIconOrder] = useState(desktopItems);
-
-  function handleDesktopContextMenu(
-    event: React.MouseEvent<HTMLElement>
-  ) {
-    const target = event.target as HTMLElement;
-
-    // Don't show the desktop menu over other interface elements.
-    if (
-      target.closest(
-        "button, .window, .taskbar, .start-menu, .shutdown-screen"
-      )
-    ) {
-      return;
+  const [activeWallpaper, setActiveWallpaper] = useState<Wallpaper>(() => {
+    if (typeof window !== "undefined") {
+      const savedWallpaperId = localStorage.getItem("portfolio-wallpaper");
+      const savedWallpaper = wallpapers.find(
+        (wallpaper) => wallpaper.id === savedWallpaperId
+      );
+      if (savedWallpaper) {
+        return savedWallpaper;
+      }
     }
-
-    event.preventDefault();
-
-    setContextMenu({
-      x: Math.min(event.clientX, window.innerWidth - 200),
-      y: Math.min(event.clientY, window.innerHeight - 190),
-    });
-  }
+    return wallpapers[0];
+  });
+  const [previewWallpaper, setPreviewWallpaper] = useState<Wallpaper>(
+    () => activeWallpaper
+  );
+  const [wallpaperSettingsOpen, setWallpaperSettingsOpen] = useState(false);
 
   // Update the taskbar clock
   useEffect(() => {
@@ -102,9 +130,43 @@ export default function Home() {
     };
   }, []);
 
+  function handleDesktopContextMenu(
+    event: React.MouseEvent<HTMLElement>
+  ) {
+    const target = event.target as HTMLElement;
+
+    // Don't show the desktop menu over other interface elements.
+    if (
+      target.closest(
+        "button, .window, .taskbar, .start-menu, .shutdown-screen"
+      )
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+
+    setContextMenu({
+      x: Math.min(event.clientX, window.innerWidth - 200),
+      y: Math.min(event.clientY, window.innerHeight - 190),
+    });
+  }
+
+  function applyWallpaper() {
+    setActiveWallpaper(previewWallpaper);
+
+    localStorage.setItem(
+      "portfolio-wallpaper",
+      previewWallpaper.id
+    );
+
+    setWallpaperSettingsOpen(false);
+  }
+
   return (
     <main
       className="retro-desktop relative min-h-svh overflow-hidden"
+      style={{ background: activeWallpaper.background }}
       onContextMenu={handleDesktopContextMenu}
       onClick={() => setContextMenu(null)}
     >
@@ -201,13 +263,105 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => {
-                    setShowDesktopProperties(true);
+                    setPreviewWallpaper(activeWallpaper);
+                    setWallpaperSettingsOpen(true);
                     setContextMenu(null);
                   }}
                 >
                   <span>⚙️</span>
                   Properties
                 </button>
+              </div>
+            )}
+
+            {wallpaperSettingsOpen && (
+              <div
+                className="wallpaper-settings-overlay"
+                onClick={() => setWallpaperSettingsOpen(false)}
+              >
+                <div
+                  className="wallpaper-settings"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <div className="wallpaper-settings-titlebar">
+                    <span>Display Properties</span>
+
+                    <button
+                      type="button"
+                      onClick={() => setWallpaperSettingsOpen(false)}
+                      aria-label="Close display properties"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div className="wallpaper-settings-content">
+                    <div className="wallpaper-tab">Background</div>
+
+                    <p>Select a desktop wallpaper:</p>
+
+                    <div className="wallpaper-options">
+                      {wallpapers.map((wallpaper) => (
+                        <button
+                          key={wallpaper.id}
+                          type="button"
+                          className={`wallpaper-option ${
+                            previewWallpaper.id === wallpaper.id
+                              ? "selected"
+                              : ""
+                          }`}
+                          onClick={() => setPreviewWallpaper(wallpaper)}
+                        >
+                          <span
+                            className="wallpaper-thumbnail"
+                            style={{
+                              background: wallpaper.background,
+                            }}
+                          />
+
+                          <span>{wallpaper.name}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="wallpaper-preview-section">
+                      <strong>Preview</strong>
+
+                      <div
+                        className="wallpaper-preview"
+                        style={{
+                          background: previewWallpaper.background,
+                        }}
+                      >
+                        <div className="wallpaper-preview-icon">
+                          🖥️
+                          <span>My Computer</span>
+                        </div>
+
+                        <div className="wallpaper-preview-taskbar">
+                          <span>Start</span>
+                          <span>12:00 PM</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="wallpaper-settings-actions">
+                    <button type="button" onClick={applyWallpaper}>
+                      Apply
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPreviewWallpaper(activeWallpaper);
+                        setWallpaperSettingsOpen(false);
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 

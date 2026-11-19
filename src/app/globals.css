@@ -790,3 +790,164 @@ body {
 .desktop-properties-actions button:active {
   border-style: inset;
 }
+
+
+/* Wallpaper Settings */
+.wallpaper-settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.wallpaper-settings {
+  width: min(490px, 100%);
+  max-height: 90%;
+  overflow-y: auto;
+  background: #c0c0c0;
+  border: 3px outset #ffffff;
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
+  color: #000000;
+  font-size: 12px;
+}
+
+.wallpaper-settings-titlebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background: #000080;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.wallpaper-settings-titlebar button {
+  width: 21px;
+  height: 21px;
+  border: 2px outset #ffffff;
+  background: #c0c0c0;
+  color: #000000;
+  cursor: pointer;
+}
+
+.wallpaper-settings-content {
+  padding: 15px;
+}
+
+.wallpaper-tab {
+  display: inline-block;
+  padding: 7px 14px;
+  margin-bottom: 15px;
+  background: #c0c0c0;
+  border: 2px outset #ffffff;
+  font-weight: bold;
+}
+
+.wallpaper-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.wallpaper-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px;
+  border: 2px outset #ffffff;
+  background: #c0c0c0;
+  color: #000000;
+  font-family: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wallpaper-option.selected {
+  border-style: inset;
+  background: #d5d5d5;
+}
+
+.wallpaper-thumbnail {
+  width: 42px;
+  height: 32px;
+  flex-shrink: 0;
+  border: 1px solid #555555;
+}
+
+.wallpaper-preview-section {
+  margin-top: 20px;
+}
+
+.wallpaper-preview {
+  position: relative;
+  height: 145px;
+  margin-top: 8px;
+  border: 2px inset #ffffff;
+  overflow: hidden;
+}
+
+.wallpaper-preview-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 65px;
+  margin: 12px;
+  color: #ffffff;
+  font-size: 11px;
+  text-shadow: 1px 1px #000000;
+}
+
+.wallpaper-preview-icon span {
+  text-align: center;
+}
+
+.wallpaper-preview-taskbar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 8px;
+  background: #c0c0c0;
+  border-top: 2px outset #ffffff;
+  color: #000000;
+  font-size: 10px;
+}
+
+.wallpaper-settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 15px 15px;
+}
+
+.wallpaper-settings-actions button {
+  min-width: 75px;
+  padding: 7px 12px;
+  border: 2px outset #ffffff;
+  background: #c0c0c0;
+  color: #000000;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.wallpaper-settings-actions button:active {
+  border-style: inset;
+}
+
+@media (max-width: 480px) {
+  .wallpaper-options {
+    grid-template-columns: 1fr;
+  }
+}
