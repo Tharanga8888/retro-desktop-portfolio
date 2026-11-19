@@ -150,6 +150,91 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    function handleKeyboardShortcuts(event: KeyboardEvent) {
+      const target = event.target as HTMLElement;
+
+      // Don't interfere with text fields or editable content.
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      // Ctrl + Shift + R: Restore all desktop icons.
+      if (
+        event.ctrlKey &&
+        event.shiftKey &&
+        event.key.toLowerCase() === "r"
+      ) {
+        event.preventDefault();
+        setIconOrder([...desktopItems]);
+        setSelectedIcon(null);
+        return;
+      }
+
+      // F5: Refresh the desktop icon arrangement.
+      if (event.key === "F5") {
+        event.preventDefault();
+        setIconOrder([...desktopItems]);
+        setSelectedIcon(null);
+        setContextMenu(null);
+        return;
+      }
+
+      // Escape: Close menus and dialogs.
+      if (event.key === "Escape") {
+        setContextMenu(null);
+        setStartMenuOpen(false);
+        setWallpaperSettingsOpen(false);
+        return;
+      }
+
+      // Ctrl + Escape: Toggle the Start Menu.
+      if (event.ctrlKey && event.key === "Escape") {
+        event.preventDefault();
+        setStartMenuOpen((current) => !current);
+        setContextMenu(null);
+        return;
+      }
+
+      // Delete: Remove the selected desktop shortcut.
+      if (event.key === "Delete" && selectedIcon) {
+        event.preventDefault();
+
+        setIconOrder((current) =>
+          current.filter((item) => item.id !== selectedIcon)
+        );
+
+        setSelectedIcon(null);
+      }
+      // Ctrl + Escape: Toggle the Start Menu.
+      if (event.ctrlKey && event.key === "Escape") {
+        event.preventDefault();
+        setStartMenuOpen((current) => !current);
+        setContextMenu(null);
+        return;
+      }
+
+      // Escape: Close menus and dialogs.
+      if (event.key === "Escape") {
+        setContextMenu(null);
+        setStartMenuOpen(false);
+        setWallpaperSettingsOpen(false);
+        return;
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyboardShortcuts);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyboardShortcuts);
+    };
+  }, [selectedIcon]);
+
+
   function handleDesktopContextMenu(
     event: React.MouseEvent<HTMLElement>
   ) {

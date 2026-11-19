@@ -951,3 +951,20 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Keyboard Accessibility */
+.desktop-icon:focus-visible,
+.taskbar button:focus-visible,
+.start-menu button:focus-visible {
+  outline: 2px dotted #ffffff;
+  outline-offset: 2px;
+}
+
+.desktop-icon:focus-visible {
+  background: rgba(0, 0, 128, 0.25);
+}
+
+button:focus-visible {
+  outline-offset: 2px;
+}
