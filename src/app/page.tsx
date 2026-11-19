@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore  } from "react";
 import WindowManager from "@/components/WindowManager";
 import type { WindowID } from "@/types/window";
 
@@ -69,6 +69,32 @@ const wallpapers: Wallpaper[] = [
     background: "linear-gradient(135deg, #002b1a, #006400, #228b22)",
   },
 ];
+const WALLPAPER_STORAGE_KEY = "portfolio-wallpaper";
+
+// Listen for wallpaper changes.
+function subscribeToWallpaper(callback: () => void) {
+  window.addEventListener("storage", callback);
+  window.addEventListener("wallpaper-change", callback);
+
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener("wallpaper-change", callback);
+  };
+}
+
+// Read the saved wallpaper in the browser.
+function getWallpaperSnapshot() {
+  try {
+    return localStorage.getItem(WALLPAPER_STORAGE_KEY) ?? "classic";
+  } catch {
+    return "classic";
+  }
+}
+
+// Always return the same wallpaper during server rendering and the initial client hydration.
+function getServerWallpaperSnapshot() {
+  return "classic";
+}
 
 export default function Home() {
   const [time, setTime] = useState("");
@@ -81,21 +107,15 @@ export default function Home() {
   } | null>(null);
   const [showDesktopProperties, setShowDesktopProperties] = useState(false);
   const [iconOrder, setIconOrder] = useState(desktopItems);
-  const [activeWallpaper, setActiveWallpaper] = useState<Wallpaper>(() => {
-    if (typeof window !== "undefined") {
-      const savedWallpaperId = localStorage.getItem("portfolio-wallpaper");
-      const savedWallpaper = wallpapers.find(
-        (wallpaper) => wallpaper.id === savedWallpaperId
-      );
-      if (savedWallpaper) {
-        return savedWallpaper;
-      }
-    }
-    return wallpapers[0];
-  });
-  const [previewWallpaper, setPreviewWallpaper] = useState<Wallpaper>(
-    () => activeWallpaper
+  const savedWallpaperId = useSyncExternalStore(
+    subscribeToWallpaper,
+    getWallpaperSnapshot,
+    getServerWallpaperSnapshot
   );
+  const activeWallpaper =
+    wallpapers.find((wallpaper) => wallpaper.id === savedWallpaperId) ??
+    wallpapers[0];
+  const [previewWallpaper, setPreviewWallpaper] = useState<Wallpaper>(wallpapers[0]);
   const [wallpaperSettingsOpen, setWallpaperSettingsOpen] = useState(false);
 
   // Update the taskbar clock
@@ -153,14 +173,19 @@ export default function Home() {
   }
 
   function applyWallpaper() {
-    setActiveWallpaper(previewWallpaper);
+    try {
+      localStorage.setItem(
+        WALLPAPER_STORAGE_KEY,
+        previewWallpaper.id
+      );
 
-    localStorage.setItem(
-      "portfolio-wallpaper",
-      previewWallpaper.id
-    );
+      // Notify the current tab about the wallpaper change.
+      window.dispatchEvent(new Event("wallpaper-change"));
 
-    setWallpaperSettingsOpen(false);
+      setWallpaperSettingsOpen(false);
+    } catch (error) {
+      console.error("Failed to save wallpaper:", error);
+    }
   }
 
   return (
