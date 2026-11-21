@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import Window from "./Window";
 import type { WindowID, WindowState } from "@/types/window";
@@ -13,6 +13,12 @@ type WindowManagerProps = {
     windows: WindowState[];
     activeWindowId: WindowID | null;
     onTaskbarClick: (id: WindowID) => void;
+    cascadeWindows: () => void;
+    tileHorizontally: () => void;
+    tileVertically: () => void;
+    minimizeAllWindows: () => void;
+    restoreAllWindows: () => void;
+    bringAllWindowsToFront: () => void;
   }) => ReactNode;
 };
 
@@ -60,6 +66,28 @@ export default function WindowManager({
   const [windows, setWindows] = useState<WindowState[]>([]);
   const [nextZIndex, setNextZIndex] = useState(10);
   const managerRef = useRef<HTMLDivElement>(null);
+  const [managerSize, setManagerSize] = useState({
+    width: 0,
+    height: 0,
+  });
+
+  useEffect(() => {
+    const container = managerRef.current;
+    if (!container) return;
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      setManagerSize({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+      });
+    });
+
+    resizeObserver.observe(container);
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
   const activeWindow = windows.reduce<WindowState | null>(
     (active, window) => {
       if (window.isMinimized) return active;
@@ -155,17 +183,15 @@ export default function WindowManager({
 
   // Move a window to a new position
   function moveWindow(id: WindowID, x: number, y: number) {
-    const container = managerRef.current;
-
-    if (!container) return;
-
+    if (managerSize.width === 0 || managerSize.height === 0) {
+      return;
+    }
     const maxX = Math.max(
       0,
-      container.clientWidth -
+      managerSize.width -
         (windows.find((window) => window.id === id)?.width ?? 0)
     );
-
-    const maxY = Math.max(0, container.clientHeight - 27);
+    const maxY = Math.max(0, managerSize.height - 27);
 
     const boundedX = Math.min(Math.max(0, x), maxX);
     const boundedY = Math.min(Math.max(0, y), maxY);
@@ -211,6 +237,184 @@ export default function WindowManager({
     setNextZIndex((current) => current + 1);
   }
 
+  // Arrange all open windows in a cascading layout.
+  function cascadeWindows() {
+    const containerWidth = managerSize.width;
+    const containerHeight = managerSize.height;
+
+    if (containerWidth === 0 || containerHeight === 0) return;
+
+    setWindows((currentWindows) => {
+      const openWindows = currentWindows.filter(
+        (window) => window.isOpen
+      );
+
+      return currentWindows.map((window) => {
+        const index = openWindows.findIndex(
+          (item) => item.id === window.id
+        );
+
+        if (index === -1) return window;
+
+        const width = Math.min(window.width, containerWidth);
+        const height = Math.min(window.height, containerHeight);
+
+        const maxX = Math.max(0, containerWidth - width);
+        const maxY = Math.max(0, containerHeight - height);
+
+        return {
+          ...window,
+          x: Math.min(index * 30, maxX),
+          y: Math.min(index * 30, maxY),
+          width,
+          height,
+          isMinimized: false,
+          isMaximized: false,
+          zIndex: nextZIndex + index,
+        };
+      });
+    });
+
+    setNextZIndex((current) => current + windows.filter(
+      (window) => window.isOpen
+    ).length);
+  }
+
+  // Arrange windows in horizontal rows.
+  function tileHorizontally() {
+    const containerWidth = managerSize.width;
+    const containerHeight = managerSize.height;
+
+    if (containerWidth === 0 || containerHeight === 0) return;
+
+    setWindows((currentWindows) => {
+      const openWindows = currentWindows.filter(
+        (window) => window.isOpen
+      );
+
+      const count = openWindows.length;
+
+      if (count === 0) return currentWindows;
+
+      return currentWindows.map((window) => {
+        const index = openWindows.findIndex(
+          (item) => item.id === window.id
+        );
+
+        if (index === -1) return window;
+
+        const rowHeight = containerHeight / count;
+        const y = index * rowHeight;
+
+        return {
+          ...window,
+          x: 0,
+          y,
+          width: containerWidth,
+          height: rowHeight,
+          isMinimized: false,
+          isMaximized: false,
+          zIndex: nextZIndex + index,
+        };
+      });
+    });
+
+    setNextZIndex((current) => current + windows.filter(
+      (window) => window.isOpen
+    ).length);
+  }
+
+  // Arrange windows in vertical columns.
+  function tileVertically() {
+    const containerWidth = managerSize.width;
+    const containerHeight = managerSize.height;
+
+    if (containerWidth === 0 || containerHeight === 0) return;
+
+    setWindows((currentWindows) => {
+      const openWindows = currentWindows.filter(
+        (window) => window.isOpen
+      );
+
+      const count = openWindows.length;
+
+      if (count === 0) return currentWindows;
+
+      return currentWindows.map((window) => {
+        const index = openWindows.findIndex(
+          (item) => item.id === window.id
+        );
+
+        if (index === -1) return window;
+
+        const columnWidth = containerWidth / count;
+        const x = index * columnWidth;
+
+        return {
+          ...window,
+          x,
+          y: 0,
+          width: columnWidth,
+          height: containerHeight,
+          isMinimized: false,
+          isMaximized: false,
+          zIndex: nextZIndex + index,
+        };
+      });
+    });
+
+    setNextZIndex((current) => current + windows.filter(
+      (window) => window.isOpen
+    ).length);
+  }
+
+
+  // Minimize every open window.
+  function minimizeAllWindows() {
+    setWindows((currentWindows) =>
+      currentWindows.map((window) =>
+        window.isOpen
+          ? { ...window, isMinimized: true }
+          : window
+      )
+    );
+  }
+
+  // Restore every minimized window.
+  function restoreAllWindows() {
+    setWindows((currentWindows) =>
+      currentWindows.map((window) =>
+        window.isOpen
+          ? { ...window, isMinimized: false }
+          : window
+      )
+    );
+  }
+
+  // Restore all windows and bring them to the front.
+  function bringAllWindowsToFront() {
+    const openWindowCount = windows.filter(
+      (window) => window.isOpen
+    ).length;
+
+    setWindows((currentWindows) => {
+      let zIndex = nextZIndex;
+
+      return currentWindows.map((window) => {
+        if (!window.isOpen) return window;
+
+        return {
+          ...window,
+          isMinimized: false,
+          zIndex: zIndex++,
+        };
+      });
+    });
+
+    setNextZIndex((current) => current + openWindowCount);
+  }
+
+
   return (
     <div className="window-manager-root">
       {children({
@@ -218,6 +422,12 @@ export default function WindowManager({
         windows,
         activeWindowId: activeWindow?.id ?? null,
         onTaskbarClick: handleTaskbarClick,
+        cascadeWindows,
+        tileHorizontally,
+        tileVertically,
+        minimizeAllWindows,
+        restoreAllWindows,
+        bringAllWindowsToFront,
       })}
 
       <div className="window-manager" ref={managerRef}>
