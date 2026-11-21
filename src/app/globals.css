@@ -968,3 +968,66 @@ body {
 button:focus-visible {
   outline-offset: 2px;
 }
+
+/* Window Arrangement submenu */
+.context-menu-submenu {
+  position: relative;
+}
+
+/* Submenu trigger */
+.desktop-context-menu .context-menu-submenu-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  cursor: default;
+}
+
+.desktop-context-menu .context-menu-submenu-trigger .submenu-arrow {
+  width: auto;
+  margin-left: auto;
+  padding-left: 12px;
+  font-size: 10px;
+}
+
+/* Hide submenu by default */
+.desktop-context-menu .context-menu-submenu-content {
+  display: none;
+  position: absolute;
+  top: -5px;
+  left: 100%;
+  min-width: 190px;
+  padding: 4px;
+  background: #c0c0c0;
+  border: 2px outset #ffffff;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.35);
+  z-index: 200;
+  font-size: 12px;
+}
+
+/* Show submenu on hover or keyboard focus */
+.context-menu-submenu:hover > .context-menu-submenu-content,
+.context-menu-submenu:focus-within > .context-menu-submenu-content {
+  display: block;
+}
+
+/* Submenu options */
+.desktop-context-menu .context-menu-submenu-content button {
+  display: block;
+  width: 100%;
+  min-height: 29px;
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #000000;
+  text-align: left;
+  font: inherit;
+  cursor: default;
+}
+
+.desktop-context-menu .context-menu-submenu-content button:hover,
+.desktop-context-menu .context-menu-submenu-content button:focus-visible {
+  background: #000080;
+  color: #ffffff;
+  outline: none;
+}

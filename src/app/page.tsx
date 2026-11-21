@@ -289,6 +289,12 @@ export default function Home() {
           windows,
           activeWindowId,
           onTaskbarClick,
+          cascadeWindows,
+          tileHorizontally,
+          tileVertically,
+          minimizeAllWindows,
+          restoreAllWindows,
+          bringAllWindowsToFront,
         }) => (
           <>
             <div className="desktop-icons grid grid-cols-1">
@@ -367,6 +373,83 @@ export default function Home() {
                   <span>🔤</span>
                   Sort by Name
                 </button>
+
+                <div className="context-menu-divider" />
+
+                <div className="context-menu-submenu">
+                  <button
+                    type="button"
+                    className="context-menu-submenu-trigger"
+                  >
+                    <span>🪟</span>
+                    Window Arrangement
+                    <span className="submenu-arrow">▶</span>
+                  </button>
+
+                  <div className="context-menu-submenu-content">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        cascadeWindows();
+                        setContextMenu(null);
+                      }}
+                    >
+                      Cascade Windows
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        tileHorizontally();
+                        setContextMenu(null);
+                      }}
+                    >
+                      Tile Horizontally
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        tileVertically();
+                        setContextMenu(null);
+                      }}
+                    >
+                      Tile Vertically
+                    </button>
+
+                    <div className="context-menu-divider" />
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        minimizeAllWindows();
+                        setContextMenu(null);
+                      }}
+                    >
+                      Minimize All
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        restoreAllWindows();
+                        setContextMenu(null);
+                      }}
+                    >
+                      Restore All
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        bringAllWindowsToFront();
+                        setContextMenu(null);
+                      }}
+                    >
+                      Bring All to Front
+                    </button>
+                  </div>
+                </div>
 
                 <div className="context-menu-divider" />
 
